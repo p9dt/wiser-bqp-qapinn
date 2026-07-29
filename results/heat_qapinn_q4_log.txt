@@ -1,0 +1,26 @@
+[heat_qapinn_q4] model=qapinn params=985 pde=heat
+epoch=250 | loss=6.226e-02 | loss_pde=2.706e-03 | loss_data=5.956e-02
+epoch=500 | loss=4.201e-02 | loss_pde=3.422e-03 | loss_data=3.859e-02 | rel_l2=1.200e-01 | max_abs=5.208e-01
+epoch=750 | loss=2.475e-02 | loss_pde=4.298e-03 | loss_data=2.045e-02
+epoch=1000 | loss=7.800e-03 | loss_pde=2.692e-03 | loss_data=5.108e-03 | rel_l2=4.276e-02 | max_abs=2.163e-01
+epoch=1250 | loss=3.455e-03 | loss_pde=1.621e-03 | loss_data=1.834e-03
+epoch=1500 | loss=1.796e-03 | loss_pde=8.330e-04 | loss_data=9.632e-04 | rel_l2=2.209e-02 | max_abs=8.416e-02
+epoch=1750 | loss=1.284e-03 | loss_pde=6.287e-04 | loss_data=6.556e-04
+epoch=2000 | loss=1.213e-03 | loss_pde=6.906e-04 | loss_data=5.227e-04 | rel_l2=1.720e-02 | max_abs=7.223e-02
+epoch=2250 | loss=8.375e-04 | loss_pde=4.419e-04 | loss_data=3.956e-04
+epoch=2500 | loss=7.166e-04 | loss_pde=3.859e-04 | loss_data=3.307e-04 | rel_l2=1.353e-02 | max_abs=6.463e-02
+epoch=2750 | loss=7.964e-04 | loss_pde=4.874e-04 | loss_data=3.090e-04
+epoch=3000 | loss=5.629e-04 | loss_pde=3.139e-04 | loss_data=2.489e-04 | rel_l2=1.191e-02 | max_abs=5.811e-02
+
+=== summary ===
+{
+  "run_name": "heat_qapinn_q4",
+  "pde": "heat",
+  "model_type": "qapinn",
+  "n_params": 985,
+  "rel_l2": 0.011908134445548058,
+  "max_abs": 0.05811288580298424,
+  "train_seconds": 39009.03457951546
+}
+
+artifacts -> E:\Projects\WISER BQP\results\heat_qapinn_q4

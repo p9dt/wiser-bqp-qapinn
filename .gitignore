@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+
+# Results / artifacts
+results/**/*.pt
+results/**/*.png
+results/**/*.npz
+results/**/*.csv
+!results/.gitkeep
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# The large challenge brief (embedded base64 images ~1.3MB) — keep out of git if desired
+# BQP - WISER Quantum Challenge [SHARED].md

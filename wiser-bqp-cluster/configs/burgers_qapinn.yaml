@@ -1,0 +1,35 @@
+# Burgers QAPINN, 4 qubits — same training recipe as burgers_pinn.yaml for a
+# like-for-like table. Ref [3] reports 4q "still failing to capture the shock";
+# our bandwidth thesis predicts the same. 3q/5q variants follow in the sweep.
+run_name: burgers_qapinn_q4
+seed: 1234
+
+pde:
+  name: burgers
+  nu: 0.0031830988618379067   # 0.01 / pi
+  t_max: 1.0
+
+model:
+  type: qapinn
+  hidden: 20
+  depth: 4
+  activation: tanh
+  quantum:
+    n_qubits: 4
+    n_layers: 2
+    encoding: reupload
+    entanglement: ring
+    measurement: expectation
+    trainable_scaling: true
+
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 8000
+  adam_lr: 0.001
+  lbfgs_epochs: 500
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 1000
+  eval_every: 2000

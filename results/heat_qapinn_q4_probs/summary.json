@@ -1,0 +1,10 @@
+{
+  "run_name": "heat_qapinn_q4_probs",
+  "pde": "heat",
+  "model_type": "qapinn",
+  "n_params": 1225,
+  "rel_l2": 0.006305975373834372,
+  "max_abs": 0.0495171882212162,
+  "train_seconds": 1990.5144555568695,
+  "process_seconds": 7027.4375
+}

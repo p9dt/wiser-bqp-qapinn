@@ -1,0 +1,23 @@
+[burgers_qapinn_q4] model=qapinn params=985 pde=burgers
+epoch=1000 | loss=8.227e-02 | loss_pde=2.687e-02 | loss_data=5.541e-02
+epoch=2000 | loss=6.355e-02 | loss_pde=1.987e-02 | loss_data=4.368e-02 | rel_l2=5.062e-01 | max_abs=9.755e-01
+epoch=3000 | loss=4.917e-02 | loss_pde=1.589e-02 | loss_data=3.328e-02
+epoch=4000 | loss=2.296e-02 | loss_pde=9.001e-03 | loss_data=1.396e-02 | rel_l2=2.879e-01 | max_abs=1.349e+00
+epoch=5000 | loss=1.416e-02 | loss_pde=5.956e-03 | loss_data=8.206e-03
+epoch=6000 | loss=1.032e-02 | loss_pde=4.652e-03 | loss_data=5.666e-03 | rel_l2=2.125e-01 | max_abs=1.456e+00
+epoch=7000 | loss=8.071e-03 | loss_pde=3.805e-03 | loss_data=4.266e-03
+epoch=8000 | loss=7.364e-03 | loss_pde=3.937e-03 | loss_data=3.427e-03 | rel_l2=1.508e-01 | max_abs=1.143e+00
+
+=== summary ===
+{
+  "run_name": "burgers_qapinn_q4",
+  "pde": "burgers",
+  "model_type": "qapinn",
+  "n_params": 985,
+  "rel_l2": 0.06949714571237564,
+  "max_abs": 0.46742764115333557,
+  "train_seconds": 41100.227128744125,
+  "process_seconds": 42139.203125
+}
+
+artifacts -> E:\Projects\WISER BQP\results\burgers_qapinn_q4

@@ -1,0 +1,37 @@
+# Ref-[3] reproduction fix: their §II.B extracts a *probability state vector*
+# (2^n outputs), so `measurement: probs`. Identical to heat_qapinn.yaml otherwise.
+# Pair with heat_qapinn_q4 (expectation) = free ablation; ref-[4] prediction:
+# coefficients change, bandwidth must NOT.
+run_name: heat_qapinn_q4_probs
+seed: 1234
+
+pde:
+  name: heat
+  alpha: 0.05
+  modes: [[1, 1.0], [4, 0.5]]
+  t_max: 1.0
+
+model:
+  type: qapinn
+  hidden: 20
+  depth: 4
+  activation: tanh
+  quantum:
+    n_qubits: 4
+    n_layers: 2
+    encoding: reupload
+    entanglement: ring
+    measurement: probs
+    trainable_scaling: true
+
+training:
+  n_collocation: 2000
+  n_supervised: 300
+  adam_epochs: 3000
+  adam_lr: 0.005
+  lbfgs_epochs: 0
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 250
+  eval_every: 500
