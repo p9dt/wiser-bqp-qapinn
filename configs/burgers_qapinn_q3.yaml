@@ -1,0 +1,35 @@
+# Burgers QAPINN, 3 qubits — same training recipe as burgers_pinn.yaml for a
+# like-for-like table. Ref [3] predicts a ~5-qubit shock threshold; this variant
+# tests that directly against the q4 baseline (NEXT_STEPS item 2).
+run_name: burgers_qapinn_q3
+seed: 1234
+
+pde:
+  name: burgers
+  nu: 0.0031830988618379067   # 0.01 / pi
+  t_max: 1.0
+
+model:
+  type: qapinn
+  hidden: 20
+  depth: 4
+  activation: tanh
+  quantum:
+    n_qubits: 3
+    n_layers: 2
+    encoding: reupload
+    entanglement: ring
+    measurement: expectation
+    trainable_scaling: true
+
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 8000
+  adam_lr: 0.001
+  lbfgs_epochs: 500
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 1000
+  eval_every: 2000
