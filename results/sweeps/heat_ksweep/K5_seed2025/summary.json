@@ -1,0 +1,13 @@
+{
+  "run_name": "K5_seed2025",
+  "K": 5,
+  "n_qubits": 2,
+  "encoding": "reupload",
+  "n_layers": 5,
+  "seed": 2025,
+  "n_params": 951,
+  "rel_l2": 0.07015509903430939,
+  "max_abs": 0.25337767601013184,
+  "train_seconds": 344.8014943599701,
+  "process_seconds": 341.72614764900004
+}

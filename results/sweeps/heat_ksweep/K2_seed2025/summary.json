@@ -1,0 +1,13 @@
+{
+  "run_name": "K2_seed2025",
+  "K": 2,
+  "n_qubits": 4,
+  "encoding": "angle",
+  "n_layers": 1,
+  "seed": 2025,
+  "n_params": 973,
+  "rel_l2": 0.014694099314510822,
+  "max_abs": 0.055304188281297684,
+  "train_seconds": 289.0166971683502,
+  "process_seconds": 284.318611303
+}

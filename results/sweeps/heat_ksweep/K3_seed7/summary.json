@@ -1,0 +1,13 @@
+{
+  "run_name": "K3_seed7",
+  "K": 3,
+  "n_qubits": 2,
+  "encoding": "reupload",
+  "n_layers": 3,
+  "seed": 7,
+  "n_params": 939,
+  "rel_l2": 0.05719521641731262,
+  "max_abs": 0.1706441044807434,
+  "train_seconds": 213.88599801063538,
+  "process_seconds": 209.339586908
+}

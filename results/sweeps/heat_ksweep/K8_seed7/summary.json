@@ -1,0 +1,13 @@
+{
+  "run_name": "K8_seed7",
+  "K": 8,
+  "n_qubits": 4,
+  "encoding": "reupload",
+  "n_layers": 4,
+  "seed": 7,
+  "n_params": 1009,
+  "rel_l2": 0.022620592266321182,
+  "max_abs": 0.09455933421850204,
+  "train_seconds": 1182.2414610385895,
+  "process_seconds": 1172.627795594
+}

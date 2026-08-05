@@ -1,0 +1,13 @@
+{
+  "run_name": "K1_seed7",
+  "K": 1,
+  "n_qubits": 2,
+  "encoding": "angle",
+  "n_layers": 1,
+  "seed": 7,
+  "n_params": 927,
+  "rel_l2": 0.16556109488010406,
+  "max_abs": 0.552321195602417,
+  "train_seconds": 85.03521871566772,
+  "process_seconds": 83.710498694
+}

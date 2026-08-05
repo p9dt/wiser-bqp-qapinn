@@ -1,0 +1,13 @@
+{
+  "run_name": "K4_seed2025",
+  "K": 4,
+  "n_qubits": 4,
+  "encoding": "reupload",
+  "n_layers": 2,
+  "seed": 2025,
+  "n_params": 985,
+  "rel_l2": 0.012935228645801544,
+  "max_abs": 0.05067969486117363,
+  "train_seconds": 504.89539098739624,
+  "process_seconds": 500.755661045
+}

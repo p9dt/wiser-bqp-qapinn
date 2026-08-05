@@ -1,0 +1,13 @@
+{
+  "run_name": "K8_seed2025",
+  "K": 8,
+  "n_qubits": 4,
+  "encoding": "reupload",
+  "n_layers": 4,
+  "seed": 2025,
+  "n_params": 1009,
+  "rel_l2": 0.006842931732535362,
+  "max_abs": 0.01957259327173233,
+  "train_seconds": 916.9824914932251,
+  "process_seconds": 910.760538175
+}

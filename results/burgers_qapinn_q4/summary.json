@@ -3,8 +3,8 @@
   "pde": "burgers",
   "model_type": "qapinn",
   "n_params": 985,
-  "rel_l2": 0.06949714571237564,
-  "max_abs": 0.46742764115333557,
-  "train_seconds": 41100.227128744125,
-  "process_seconds": 42139.203125
+  "rel_l2": 0.06968136131763458,
+  "max_abs": 0.4768974483013153,
+  "train_seconds": 4096.510694265366,
+  "process_seconds": 4058.117215153
 }
