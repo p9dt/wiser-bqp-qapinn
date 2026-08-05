@@ -3,7 +3,8 @@
   "pde": "heat",
   "model_type": "qapinn",
   "n_params": 985,
-  "rel_l2": 0.011908134445548058,
-  "max_abs": 0.05811288580298424,
-  "train_seconds": 39009.03457951546
+  "rel_l2": 0.011660528369247913,
+  "max_abs": 0.0584714375436306,
+  "train_seconds": 490.0849401950836,
+  "process_seconds": 484.623889557
 }

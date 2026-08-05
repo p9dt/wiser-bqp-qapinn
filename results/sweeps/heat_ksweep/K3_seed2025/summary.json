@@ -1,0 +1,13 @@
+{
+  "run_name": "K3_seed2025",
+  "K": 3,
+  "n_qubits": 2,
+  "encoding": "reupload",
+  "n_layers": 3,
+  "seed": 2025,
+  "n_params": 939,
+  "rel_l2": 0.07972922921180725,
+  "max_abs": 0.26629638671875,
+  "train_seconds": 215.31058025360107,
+  "process_seconds": 213.080659253
+}
