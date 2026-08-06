@@ -11,23 +11,25 @@ Bandwidth counting (ref [4], validated in Phase 4a):
 with in_dim = 2 (x, t) for heat. The ladder below is the §9 table, verified in ``__main__``.
 
 Everything except the bandwidth dials is held fixed (measurement=expectation for clean
-Fourier channels; ring entanglement; the heat_qapinn training recipe).
+Fourier channels; ring entanglement; the sweep training recipe).
+
+PDE and training recipe load from ``configs/heat_ksweep.yaml`` so the sweep's recipe
+can be diffed against the other configs instead of hiding in source.
 """
 from __future__ import annotations
 
 import json
 from pathlib import Path
 
+from .utils.config import load_config
+
 IN_DIM = 2  # heat inputs are (x, t)
 
-HEAT_PDE = {"name": "heat", "alpha": 0.05, "modes": [[1, 1.0], [4, 0.5]], "t_max": 1.0}
+CONFIG_PATH = Path(__file__).resolve().parents[1] / "configs" / "heat_ksweep.yaml"
+_CFG = load_config(CONFIG_PATH)
 
-HEAT_TRAIN = {
-    "n_collocation": 2000, "n_supervised": 300,
-    "adam_epochs": 3000, "adam_lr": 0.005,
-    "lbfgs_epochs": 0, "resample_every": 0,
-    "w_pde": 1.0, "w_data": 1.0, "log_every": 500, "eval_every": 1000,
-}
+HEAT_PDE = _CFG["pde"]
+HEAT_TRAIN = _CFG["training"]
 
 # (K, n_qubits, encoding, n_layers) — bandwidth ladder, matches PROJECT_LOG §9.
 K_LADDER = [
@@ -88,11 +90,16 @@ def run_one(index: int, out_root: Path) -> dict:
     return summary
 
 
-if __name__ == "__main__":  # self-check: enumeration + K formula
+if __name__ == "__main__":  # self-check: enumeration + K formula + recipe pinning
     ts = tasks()
     assert len(ts) == 18, len(ts)
     for t in ts:
         up = t["n_layers"] if t["encoding"] == "reupload" else 1
         assert t["K"] == (t["n_qubits"] // IN_DIM) * up, t
     assert len({t["K"] for t in ts}) == 6
+
+    # The two recipe values that made the sweep incomparable to the single-run heat
+    # baselines. Editing them in YAML invalidates results/sweeps/heat_ksweep/.
+    assert HEAT_TRAIN["n_collocation"] == 2000 and HEAT_TRAIN["lbfgs_epochs"] == 0, HEAT_TRAIN
+
     print(f"{len(ts)} tasks OK; K ladder consistent: {sorted({t['K'] for t in ts})}")

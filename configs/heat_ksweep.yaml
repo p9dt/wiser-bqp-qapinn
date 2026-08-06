@@ -1,0 +1,28 @@
+# Heat K-sweep — PDE and training recipe shared by all 18 bandwidth cells.
+# The (K, n_qubits, encoding, n_layers) ladder stays in src/sweeps.py.
+#
+# This recipe is deliberately lighter than configs/heat_pinn.yaml (2000 vs 8000
+# collocation, 3000 vs 6000 Adam, lr 0.005 vs 0.001, no L-BFGS at all) to keep 18
+# runs tractable. The sweep is therefore internally consistent but NOT comparable
+# to the single-run heat baselines. For a like-for-like classical reference at
+# this recipe, use configs/heat_pinn_sweeprecipe.yaml.
+#
+# Editing anything below invalidates results/sweeps/heat_ksweep/.
+
+pde:
+  name: heat
+  alpha: 0.05
+  modes: [[1, 1.0], [4, 0.5]]
+  t_max: 1.0
+
+training:
+  n_collocation: 2000
+  n_supervised: 300
+  adam_epochs: 3000
+  adam_lr: 0.005
+  lbfgs_epochs: 0
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 500
+  eval_every: 1000
