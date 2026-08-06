@@ -1,0 +1,10 @@
+{
+  "run_name": "burgers_nu0.1_q5",
+  "pde": "burgers",
+  "model_type": "qapinn",
+  "n_params": 1011,
+  "rel_l2": 0.0039003968704491854,
+  "max_abs": 0.011139437556266785,
+  "train_seconds": 9036.844933509827,
+  "process_seconds": 8974.22336547
+}
