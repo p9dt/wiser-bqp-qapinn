@@ -1,0 +1,25 @@
+run_name: burgers_nu0.1_pinn
+seed: 1234
+
+pde:
+  name: burgers
+  nu: 0.1
+  t_max: 1.0
+
+model:
+  type: mlp
+  hidden: 20
+  depth: 4
+  activation: tanh
+
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 8000
+  adam_lr: 0.001
+  lbfgs_epochs: 500
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 1000
+  eval_every: 2000
