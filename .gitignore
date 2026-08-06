@@ -22,3 +22,7 @@ Thumbs.db
 
 # The large challenge brief (embedded base64 images ~1.3MB) — keep out of git if desired
 # BQP - WISER Quantum Challenge [SHARED].md
+
+# node deps for the local deck preview
+deck/node_modules/
+deck/dist/
