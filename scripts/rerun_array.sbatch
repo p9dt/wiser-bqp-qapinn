@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=qapinn-rerun
-#SBATCH --array=1-12                 # tier 1 = 12 jobs; see TIER note below
+#SBATCH --array=1-24                 # tiers 1+2; see TIER note below
 #SBATCH --time=12:00:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
@@ -21,9 +21,13 @@
 #
 # TIER: pick the manifest line range you want.
 #   tier 1 only (12 jobs, headline comparisons) : grep '/T1_'
-#   tiers 1+2   (24 jobs, + controls & ranking) : grep -E '/T[12]_'
-#   everything  (48 jobs)                       : cat
-# Set --array to match the count.
+#   tiers 1+2   (24 jobs, + controls & ranking) : grep -E '/T[12]_'   <-- run this
+# Set --array to match. Verify first:
+#   grep -cE '/T[12]_' configs/rerun/ALL.txt
+#
+# The viscosity sweep is deliberately not included: classical already wins at
+# nu=0.05 and nu=0.1 at the existing budget, and a larger budget helps classical
+# more than quantum, so rerunning it cannot change that conclusion.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -35,7 +39,7 @@ mkdir -p logs results/rerun
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-4}
 
 MANIFEST=$(mktemp)
-grep '/T1_' configs/rerun/ALL.txt > "$MANIFEST"     # <-- edit for tiers 1+2 or all
+grep -E '/T[12]_' configs/rerun/ALL.txt > "$MANIFEST"
 
 CFG=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$MANIFEST")
 rm -f "$MANIFEST"
