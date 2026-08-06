@@ -1,0 +1,10 @@
+{
+  "run_name": "burgers_q4_lbfgs",
+  "pde": "burgers",
+  "model_type": "qapinn",
+  "n_params": 985,
+  "rel_l2": 0.025455398485064507,
+  "max_abs": 0.16451892256736755,
+  "train_seconds": 19004.80414748192,
+  "process_seconds": 69203.6875
+}

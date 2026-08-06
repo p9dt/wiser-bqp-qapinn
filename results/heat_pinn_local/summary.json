@@ -1,0 +1,10 @@
+{
+  "run_name": "heat_pinn_local",
+  "pde": "heat",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.0013159015215933323,
+  "max_abs": 0.006655741482973099,
+  "train_seconds": 162.3190062046051,
+  "process_seconds": 583.09375
+}

@@ -1,0 +1,10 @@
+{
+  "run_name": "heat_pinn_sweeprecipe",
+  "pde": "heat",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.005475147627294064,
+  "max_abs": 0.029142778366804123,
+  "train_seconds": 76.94305324554443,
+  "process_seconds": 145.984375
+}

@@ -1,0 +1,33 @@
+run_name: heat_q4_matched
+seed: 1234
+
+pde:
+  name: heat
+  alpha: 0.05
+  modes: [[1, 1.0], [4, 0.5]]
+  t_max: 1.0
+
+model:
+  type: qapinn
+  hidden: 20
+  depth: 4
+  activation: tanh
+  quantum:
+    n_qubits: 4
+    n_layers: 2
+    encoding: reupload
+    entanglement: ring
+    measurement: expectation
+    trainable_scaling: true
+
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 6000
+  adam_lr: 0.001
+  lbfgs_epochs: 500
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 1000
+  eval_every: 2000

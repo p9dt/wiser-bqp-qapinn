@@ -1,0 +1,10 @@
+{
+  "run_name": "heat_siren_local",
+  "pde": "heat",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.0007787240319885314,
+  "max_abs": 0.0053240954875946045,
+  "train_seconds": 296.3271825313568,
+  "process_seconds": 726.34375
+}

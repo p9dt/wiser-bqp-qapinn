@@ -1,0 +1,10 @@
+{
+  "run_name": "burgers_pinn_lbfgs",
+  "pde": "burgers",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.006261655129492283,
+  "max_abs": 0.03751778602600098,
+  "train_seconds": 476.0115740299225,
+  "process_seconds": 1517.703125
+}
