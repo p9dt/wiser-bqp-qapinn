@@ -1,0 +1,27 @@
+run_name: rerun/heat_siren_s7
+seed: 7
+pde:
+  name: heat
+  alpha: 0.05
+  modes:
+  - - 1
+    - 1.0
+  - - 4
+    - 0.5
+  t_max: 1.0
+model:
+  type: mlp
+  hidden: 20
+  depth: 4
+  activation: sin
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 6000
+  adam_lr: 0.001
+  lbfgs_epochs: 5000
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 500
+  eval_every: 1000

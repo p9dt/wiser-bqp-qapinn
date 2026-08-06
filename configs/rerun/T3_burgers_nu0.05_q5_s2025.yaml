@@ -1,0 +1,29 @@
+run_name: rerun/burgers_nu0.05_q5_s2025
+seed: 2025
+pde:
+  name: burgers
+  nu: 0.05
+  t_max: 1.0
+model:
+  type: qapinn
+  hidden: 20
+  depth: 4
+  activation: tanh
+  quantum:
+    n_qubits: 5
+    n_layers: 2
+    encoding: reupload
+    entanglement: ring
+    measurement: expectation
+    trainable_scaling: true
+training:
+  n_collocation: 8000
+  n_supervised: 400
+  adam_epochs: 8000
+  adam_lr: 0.001
+  lbfgs_epochs: 5000
+  resample_every: 0
+  w_pde: 1.0
+  w_data: 1.0
+  log_every: 500
+  eval_every: 1000
