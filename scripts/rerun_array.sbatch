@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=qapinn-rerun
-#SBATCH --array=1-24                 # tiers 1+2; see TIER note below
+#SBATCH --array=1-24
 #SBATCH --time=12:00:00
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
@@ -8,26 +8,28 @@
 #SBATCH --error=logs/rerun_%A_%a.err
 
 # ---------------------------------------------------------------------------
-# Fair-comparison rerun. Every config in configs/rerun/ uses ONE training
-# recipe per PDE, so classical and quantum get identical budgets:
+# Fair-comparison rerun. Submit as-is, no edits needed:
+#
+#     sbatch scripts/rerun_array.sbatch
+#
+# Runs every config listed in configs/rerun/ALL.txt (24 jobs = 8 runs x 3 seeds).
+# Each PDE uses ONE training recipe, so classical and quantum get identical
+# budgets:
 #
 #   heat    : 8000 collocation, 6000 Adam @ lr 1e-3, 5000 L-BFGS
 #   burgers : 8000 collocation, 8000 Adam @ lr 1e-3, 5000 L-BFGS
 #
 # The old results used lbfgs_epochs=500 (and 0 for the K-sweep), which cut
-# training off while it was still improving -- that is what produced the
-# misleading classical/quantum gaps. Results land in results/rerun/ so nothing
-# existing is overwritten.
+# training off while it was still improving. That penalised whichever model had
+# the most headroom left, which produced misleading gaps in both directions.
 #
-# TIER: pick the manifest line range you want.
-#   tier 1 only (12 jobs, headline comparisons) : grep '/T1_'
-#   tiers 1+2   (24 jobs, + controls & ranking) : grep -E '/T[12]_'   <-- run this
-# Set --array to match. Verify first:
-#   grep -cE '/T[12]_' configs/rerun/ALL.txt
+# Results land in results/rerun/ so nothing existing is overwritten.
+# Longest single job is burgers_q5 at roughly 6.3 h.
 #
-# The viscosity sweep is deliberately not included: classical already wins at
-# nu=0.05 and nu=0.1 at the existing budget, and a larger budget helps classical
-# more than quantum, so rerunning it cannot change that conclusion.
+# The T1_/T2_ filename prefixes are priority, not separate batches: if the queue
+# only lets part of this through, the T1_ jobs (the classical-vs-quantum
+# comparisons on both PDEs) are the ones that must land. T2_ adds the SIREN
+# controls and the Q3/Q5 bandwidth ranking.
 # ---------------------------------------------------------------------------
 
 set -euo pipefail
@@ -38,17 +40,16 @@ mkdir -p logs results/rerun
 
 export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-4}
 
-MANIFEST=$(mktemp)
-grep -E '/T[12]_' configs/rerun/ALL.txt > "$MANIFEST"
-
-CFG=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$MANIFEST")
-rm -f "$MANIFEST"
-
-if [[ -z "${CFG}" ]]; then
-  echo "no config for array index ${SLURM_ARRAY_TASK_ID}" >&2
+MANIFEST=configs/rerun/ALL.txt
+N=$(grep -c . "${MANIFEST}")
+if [[ "${SLURM_ARRAY_TASK_ID}" -gt "${N}" ]]; then
+  echo "array index ${SLURM_ARRAY_TASK_ID} exceeds ${N} configs in ${MANIFEST}" >&2
+  echo "set --array=1-${N}" >&2
   exit 1
 fi
 
-echo "[$(date -Is)] task ${SLURM_ARRAY_TASK_ID} -> ${CFG}"
+CFG=$(sed -n "${SLURM_ARRAY_TASK_ID}p" "${MANIFEST}")
+
+echo "[$(date -Is)] task ${SLURM_ARRAY_TASK_ID}/${N} -> ${CFG}"
 python -u -m experiments.run_baseline --config "${CFG}"
 echo "[$(date -Is)] done"
