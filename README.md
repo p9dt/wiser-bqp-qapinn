@@ -2,6 +2,13 @@
 
 WISER × BQP Global Quantum+AI 2026 Challenge.
 
+Team: 
+Shravan Kumar Sharma - ssharma5@nd.edu  — University of Notre Dame — United States
+Mayank Sharma  — ep23bt009@iitdh.ac.in — Indian Institute of Technology Dharwad — India 
+Satyabrat Sahu — satyabratsahu71@gmail.com — Guru Gobind Singh Indraprastha University, Delhi — India
+
+
+
 This README is written so that someone who has never seen this repository (a teammate,
 a grader, an interviewer) can read it top to bottom and understand what the project does,
 why it is built this way, how to run every piece of it, and where it currently stands.
