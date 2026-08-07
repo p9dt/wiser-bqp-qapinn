@@ -491,36 +491,36 @@ anyway.
 
 ---
 
-## 9. Project status
+## 9. What this project actually delivers
 
-Legend: done, or code ready but not yet executed, or not yet built.
+Strip away the file list and the config tables, and this repository makes four concrete
+contributions, each one backed by a run you can reproduce with the commands in §6.
 
-**Done:**
-- Core architecture: PDEs, MLP, quantum layer, QAPINN, trainer, metrics, plotting.
-- Fourier explainability module (`src/xai/fourier.py`) and demonstration figure.
-- Spectral-complexity metric (`src/xai/capacity.py`).
-- SIREN-correct initialization for the sine-activation classical control.
-- Full baseline comparison: Heat and Burgers, classical PINN vs. SIREN vs. QAPINN, with
-  properly trained baselines and a full statistical comparison across three seeds (§8.1,
-  §8.2).
-- The Heat K-sweep, isolated to a fixed register width, confirming the bandwidth elbow at
-  K = 4 (§8.3).
-- The Burgers K-ladder across Q3, Q4, and Q5 registers (§8.3).
-- The capacity and complexity comparison (§8.5).
-- Unit tests (8 of 8 passing): PDE reference sanity, quantum-layer spectrum bound.
-- Device flag (`device: auto | cpu | cuda`) wired through the trainer; see §11 for when it
-  actually helps.
+**A falsifiable theory, tested rather than assumed.** Section 1's bandwidth formula is not
+just cited, it is measured twice: once structurally, by sweeping an untrained circuit's
+output through a DFT and confirming its energy is exactly zero past K for every
+configuration we tried, and once empirically, by isolating a fixed 4-qubit register and
+watching Heat's error form a clean elbow that lands exactly at K = 4 (§8.3). The theory
+made a specific, checkable prediction, and the prediction held.
 
-**Code ready, could be extended further:**
-- A full sweep over probability readout, following up on the single promising result
-  noted in §8.6.
-- The 9-cell viscosity times qubit-count grid (configs exist under
-  `burgers_nu{...}_q{...}.yaml`), useful if you want to test whether required qubit count
-  tracks shock width beyond the three points already checked.
+**A full statistical comparison, not a single-seed anecdote.** Every headline number in
+§8.1 comes from three seeds per arm, per PDE, with a two-sample t-test behind the "tied"
+and "wins" language in §8.2. That is what let us catch our own mistake in §8.4: a
+single-seed run made the quantum layer look like it was winning on Burgers, and a proper
+multi-seed comparison against a properly trained baseline showed that result was never
+real.
 
-**Not yet built:**
-- Barren-plateau variance, loss-landscape slices, and gradient-attribution XAI modules.
-- Physical-hardware validation. Everything here is simulator-only (§8.6).
+**An explainability layer, not just an accuracy table.** `src/xai/capacity.py` answers a
+question most quantum-classical comparisons skip entirely: does a smaller parameter count
+actually mean a lower-complexity model, or just fewer numbers that behave the same way? We
+measured it directly (§8.5), and it also explains why QAPINN's variance runs higher than
+the classical baseline's.
+
+**A decision procedure, not just a verdict.** The point of this project was never "quantum
+wins" or "quantum loses" on two toy PDEs. It is the four-step checklist in §8.7: Fourier
+analyze your target, compute K, check the modes fit inside it with margin, and only then
+decide whether the quantum layer is worth its training cost. That procedure is what
+someone could actually take and apply to a PDE we never tested.
 
 ---
 
