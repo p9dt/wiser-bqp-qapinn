@@ -1,13 +1,32 @@
 # QAPINN: Explainability of the Quantum Layer in Physics-Informed Neural Networks
 
-WISER × BQP Global Quantum+AI 2026 Challenge.
+WISER × BQP Global Quantum+AI 2026 Challenge. **Team SpectralQ.**
 
-Team: 
-Shravan Kumar Sharma - ssharma5@nd.edu  — University of Notre Dame — United States
+**📊 [Presentation slides →](https://wiserbqp.netlify.app/)**  (interactive; arrow keys or
+space to advance, `F` for fullscreen, `N` for speaker notes)
 
-Mayank Sharma  — ep23bt009@iitdh.ac.in — Indian Institute of Technology Dharwad — India 
+### Team
 
-Satyabrat Sahu — satyabratsahu71@gmail.com — Guru Gobind Singh Indraprastha University, Delhi — India
+| Member | Email | Institution | Country |
+|---|---|---|---|
+| Shravan Kumar Sharma | ssharma5@nd.edu | University of Notre Dame | United States |
+| Mayank Sharma | ep23bt009@iitdh.ac.in | Indian Institute of Technology Dharwad | India |
+| Satyabrat Sahu | satyabratsahu71@gmail.com | Guru Gobind Singh Indraprastha University, Delhi | India |
+
+### Contributions
+
+- **Shravan Kumar Sharma** — Research direction and project coordination. Theoretical
+  analysis connecting the Fourier-bandwidth result to PDE spectral content, interpretation
+  of results, and writing and review of the technical report.
+- **Mayank Sharma** — Implementation of the classical PINN, SIREN, and QAPINN models
+  (`src/`) and the Fourier-spectrum diagnostic in `src/xai/`. Ran the initial benchmark
+  suite and the Heat K-sweep. Audited the experiment configurations, identified that the
+  original classical-vs-quantum comparisons used unequal training budgets (§8.4), and
+  designed the matched-budget rerun in `configs/rerun/` that produced the final §8 results.
+  Statistical analysis of the rerun and the presentation deck.
+- **Satyabrat Sahu** — Experiment execution on cluster hardware and cross-machine
+  reproducibility testing (§12.4). Analysis of run outputs, literature review, and
+  documentation and presentation support.
 
 
 
@@ -189,6 +208,11 @@ src/
                  5, 8, each at 3 random seeds
 
 configs/        one YAML file per experiment (see §7 for the anatomy of a config)
+  rerun/          the 24 configs behind every number in §8: 8 configurations x 3 seeds,
+                  one shared training recipe per PDE. ALL.txt lists them all, one per
+                  line, and is what scripts/rerun_array.sbatch reads. See §12.2.
+  heat_ksweep.yaml  PDE + training recipe for the 18-task K-sweep (the K ladder itself
+                  lives in src/sweeps.py). Deliberately lighter than the §8 recipe.
 
 experiments/    runnable top-level scripts (see §6 for exact commands)
   run_baseline.py     train one model from one config; saves summary/history/checkpoint/plots
@@ -201,12 +225,22 @@ tests/          unit tests: PDE reference sanity (residual near 0, IC/BC match),
                 theoretical bandwidth K
 
 scripts/
+  rerun_array.sbatch         SLURM job-array script: runs all 24 §8 configs in parallel,
+                             reading configs/rerun/ALL.txt. This is the one that
+                             reproduces the headline results (§12.2)
   paramshakti_array.sbatch   SLURM job-array script: runs all 18 K-sweep tasks in parallel
 
-results/        all experiment outputs (gitignored): per-run summary.json, history.json,
-                model.pt, plots, the cached Burgers reference solution, and sweep aggregates
+results/        experiment outputs: per-run summary.json, history.json, model.pt, plots,
+                the cached Burgers reference solution, and sweep aggregates.
+  rerun/          THE §8 RESULTS. 24 committed run directories, present in a fresh clone.
+                  See §12.1 for the layout and §12.2 for how to regenerate them.
+  sweeps/         K-sweep outputs (§8.3), committed
+  fourier/        bandwidth-ceiling figure (§8.3), committed
+                Exploratory runs outside these three directories are partly gitignored
+                (*.pt, *.png, *.npz, *.csv) so scratch work does not bloat the repo;
+                §12.1 explains exactly what that does and does not cover.
 
-report/         technical report and slides
+report/         submission.md, the technical report
 ```
 
 ---
@@ -422,7 +456,7 @@ as important as the numbers themselves. See §8.4.
 | Heat, relative L2 error | 0.000243 | 0.000231 | 0.000487 |
 | Burgers, relative L2 error | 0.006268 | 0.014832 | 0.019406 |
 | Seed-to-seed variance (CV) | 0.7% to 11% | 21% to 36% | 24% to 82% |
-| Training time, Heat | 2.7 min | 2.2 min | 60 min |
+| Training time, Heat | 2.7 min | 2.4 min | 60 min |
 | Training time, Burgers | 4.2 min | 4.2 min | 81 min |
 | Trainable parameters | 1,341 | 1,341 | 985 |
 
@@ -531,7 +565,9 @@ the classical baseline's across both PDEs.
   (`heat_qapinn_probs`) halved Heat's error at an earlier, smaller training budget, which
   is a large enough effect to be worth a real sweep of its own. We have not done that
   sweep yet.
-- **Narrow scope.** Two 1D PDEs, 2 to 6 qubits, three seeds. This is not evidence about
+- **Narrow scope.** Two 1D PDEs, three seeds, and trained registers of only 2 to 5 qubits
+  (the 6-qubit case appears solely in the forward-only spectrum scan, which involves no
+  training). This is not evidence about
   higher-dimensional PDEs, larger quantum registers, or physical hardware noise.
 - **No barren-plateau measurement.** We did not measure how gradient variance scales with
   qubit count, which is a known risk once VQCs grow past the modest sizes used here.
@@ -611,7 +647,7 @@ given what §8 found.
 ## 11. Compute notes
 
 Every model in §8 was trained on CPU (`torch` CPU build, PennyLane `default.qubit`), which
-is why qubit counts are kept modest (3 to 6). State-vector simulation cost grows quickly
+is why qubit counts are kept modest (2 to 5). State-vector simulation cost grows quickly
 with qubit count, and every PDE residual needs the circuit differentiated twice, for
 second-order derivatives like `u_xx`. This is also the main reason QAPINN training takes
 so much longer than classical training in §8.1: roughly 20x longer on both PDEs, purely
@@ -620,7 +656,7 @@ from re-simulating the circuit at every optimizer step.
 `src/training/trainer.py` now supports a `device` field (`auto`, `cpu`, or `cuda`), and
 `auto` will use a GPU if one is available. Worth being honest about what this does and
 does not help: at the qubit counts used throughout this project, the quantum layer itself
-gains little or nothing from a GPU, since a 3 to 6 qubit statevector is tiny (16 to 64
+gains little or nothing from a GPU, since a 2 to 5 qubit statevector is tiny (4 to 32
 amplitudes) and the per-gate kernel-launch and host-device sync overhead dominates at that
 scale. The real win from a GPU would be on the classical tail and its autodiff, for larger
 problems than the ones benchmarked here. Because of that, `src/sweeps.py` deliberately
@@ -640,63 +676,140 @@ SLURM job array so all 18 run in parallel instead of serially.
 
 ## 12. Reproducibility
 
-Every experiment reads a YAML config and a global seed (`src/utils/seeds.py`, which seeds
-Python's `random`, NumPy, and PyTorch, and requests deterministic cuDNN algorithms).
-`run_baseline.py` writes its output to `results/<run_name>/summary.json` (plus
-`history.json`, `model.pt`, and plots), and the entire `results/` directory is listed in
-`.gitignore`. Nothing under it is committed. A fresh clone of this repository has no
-`results/` directory at all, and none of the numbers in §8 ship pre-computed: they exist
-only as local output that anyone, including us, has to generate by running the commands
-below. There is no separate hidden archive elsewhere; whatever `results/` tree the
-commands below produce on your machine **is** the source of §8's numbers.
+### 12.1 Where the final results are stored
 
-### The checked-in configs are lighter than the §8 recipe, on purpose
+**Every number in §8 is committed to this repository.** They are in `results/rerun/`, one
+directory per run, named `<pde>_<model>_s<seed>`:
 
-Open `configs/heat_pinn.yaml` or `configs/burgers_qapinn.yaml` and you will see
-`lbfgs_epochs: 500` (or `0` in `heat_qapinn.yaml`), at a single seed, `1234`. That is a
-fast, exploratory setting for iterating on the code, not the recipe behind §8. The §8
-scoreboard uses **5,000 L-BFGS steps** for every model on both PDEs, at **three seeds
-(1234, 2025, and 7)** each. This is not an inconsistency to puzzle over: it is the exact
-gap §8.4 is about. An earlier run of this comparison used the lighter 500-step setting on
-the classical baseline and produced a misleading result; §8.4 is the story of catching
-that. Every other training field (collocation points, supervised points, Adam epochs and
-learning rate) already matches the recipe in §7's config table; `lbfgs_epochs` and `seed`
-are the only two fields that differ between what is checked in and what produced §8.
-
-### Exact steps to reproduce the §8.1 scoreboard
-
-```bash
-# 1. Generate 18 configs: 6 baseline models (heat_pinn, heat_qapinn, heat_siren,
-#    burgers_pinn, burgers_qapinn, burgers_siren) x 3 seeds, each forced to
-#    lbfgs_epochs: 5000 and a run_name that encodes its own seed so the three
-#    seeds' outputs never overwrite each other.
-mkdir -p configs/rerun
-for cfg in heat_pinn heat_qapinn heat_siren burgers_pinn burgers_qapinn burgers_siren; do
-  for seed in 1234 2025 7; do
-    sed -e "s/^seed: .*/seed: ${seed}/" \
-        -e "s/^run_name: .*/run_name: ${cfg}_seed${seed}/" \
-        -e "s/lbfgs_epochs: .*/lbfgs_epochs: 5000/" \
-        "configs/${cfg}.yaml" > "configs/rerun/${cfg}_seed${seed}.yaml"
-  done
-done
-
-# 2. Run all 18. Each writes results/<cfg>_seed<seed>/summary.json.
-for cfg in configs/rerun/*.yaml; do
-  python -m experiments.run_baseline --config "$cfg"
-done
+```
+results/rerun/
+  heat_pinn_s1234/     heat_pinn_s2025/     heat_pinn_s7/
+  heat_q4_s1234/       heat_q4_s2025/       heat_q4_s7/
+  heat_siren_s1234/    heat_siren_s2025/    heat_siren_s7/
+  burgers_pinn_s1234/  burgers_pinn_s2025/  burgers_pinn_s7/
+  burgers_q4_s1234/    burgers_q4_s2025/    burgers_q4_s7/
+  burgers_q3_s1234/    burgers_q3_s2025/    burgers_q3_s7/
+  burgers_q5_s1234/    burgers_q5_s2025/    burgers_q5_s7/
+  burgers_siren_s1234/ burgers_siren_s2025/ burgers_siren_s7/
 ```
 
-Then, per PDE, per model: read the three seeds' `rel_l2` field out of their
-`summary.json` files (also containing `max_abs`, `n_params`, and `train_seconds`), take
-the mean and coefficient of variation for the §8.1 table, and run a two-sample t-test
-between the classical and QAPINN arrays for §8.2's significance numbers. Re-running the
-same config with the same seed on the same machine should reproduce the same numbers up
-to floating-point nondeterminism.
+That is 8 configurations x 3 seeds = **24 runs**, all present. Each directory contains:
 
-The Heat K-sweep (§8.3) and the baseline-correction figures (§8.4) use the commands
-already given in §6 and are not affected by the change above: the K-sweep's own recipe
-(2,000 collocation points, 3,000 Adam epochs, no L-BFGS) is deliberately lighter, since it
-is a diagnostic sweep across 18 runs rather than a head-to-head accuracy comparison.
+| File | What it holds |
+|---|---|
+| `summary.json` | final `rel_l2`, `max_abs`, `n_params`, `train_seconds` — **this is the file §8's tables are built from** |
+| `history.json` | full loss trace, for the §8.4 training-curve figure |
+| `model.pt` | trained checkpoint, needed by `src/xai/capacity.py` |
+| `solution.png`, `history.png` | rendered solution field and training curve |
+
+You can therefore verify every headline number without running anything:
+
+```bash
+python -c "import json,glob;
+print(sorted((json.load(open(f))['run_name'], round(json.load(open(f))['rel_l2'],6))
+             for f in glob.glob('results/rerun/*/summary.json')))"
+```
+
+**On what is and is not gitignored:** `.gitignore` excludes heavyweight artifacts
+(`results/**/*.pt`, `*.png`, `*.npz`, `*.csv`) *by default*, so casual exploratory runs do
+not bloat the repo. The 24 `results/rerun/` directories are committed anyway — they were
+added deliberately, because they are the evidence behind every claim in §8. The K-sweep
+outputs in `results/sweeps/heat_ksweep/` and the Fourier figure in `results/fourier/` are
+committed for the same reason. If you clone this repo, the results are already there.
+
+### 12.2 Reproducing §8 exactly
+
+The §8 recipe is: **one training recipe per PDE, seeds 1234 / 2025 / 7, 5,000 L-BFGS
+refinement steps, one machine.** Those choices are not passed on the command line — each
+is baked into a config file under `configs/rerun/`, so reproduction is just running those
+24 configs.
+
+```bash
+# 1. Setup (see §5 for the full version)
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+pytest -q                                            # ~7 s, should pass before you trust anything
+
+# 2. Run all 24 configs. configs/rerun/ALL.txt lists them, one path per line.
+while read cfg; do python -m experiments.run_baseline --config "$cfg"; done < configs/rerun/ALL.txt
+
+# PowerShell equivalent:
+#   Get-Content configs/rerun/ALL.txt | ForEach-Object { python -m experiments.run_baseline --config $_ }
+
+# On a SLURM cluster, run all 24 in parallel instead (~6.3 h for the longest single job):
+#   sbatch scripts/rerun_array.sbatch
+
+# 3. Re-derive the §8.1 and §8.2 tables from the fresh outputs
+python -c "import json,glob;
+print(sorted((json.load(open(f))['run_name'], round(json.load(open(f))['rel_l2'],6))
+             for f in glob.glob('results/rerun/*/summary.json')))"
+```
+
+Outputs are written back into `results/rerun/<run_name>/`, overwriting the committed
+copies — so `git diff` after a rerun is itself a reproducibility check.
+
+**Which config maps to which §8 row.** Filenames carry a `T1_`/`T2_` priority prefix (T1 is
+the core classical-vs-quantum comparison; T2 adds the SIREN controls and the Q3/Q5
+bandwidth ladder). The prefix affects run order only, never results:
+
+| §8 row | Configs | Seeds |
+|---|---|---|
+| Heat, classical PINN | `T1_heat_pinn_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Heat, QAPINN 4-qubit | `T1_heat_q4_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Heat, SIREN control | `T2_heat_siren_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Burgers, classical PINN | `T1_burgers_pinn_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Burgers, QAPINN 4-qubit | `T1_burgers_q4_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Burgers, SIREN control | `T2_burgers_siren_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+| Burgers, QAPINN 3 / 5-qubit | `T2_burgers_q{3,5}_s{1234,2025,7}.yaml` | 1234, 2025, 7 |
+
+**The equal-budget guarantee.** This is the point of the whole rerun, so it is worth being
+able to check it in one command. Within a PDE, every config — classical, SIREN, and quantum
+alike — carries an identical `training:` block; only `model:` and `seed:` differ. Verify:
+
+```bash
+grep -A11 "^training:" configs/rerun/T1_heat_pinn_s1234.yaml configs/rerun/T1_heat_q4_s1234.yaml
+```
+
+Both print `n_collocation: 8000`, `adam_epochs: 6000`, `adam_lr: 0.001`, `lbfgs_epochs: 5000`.
+Burgers uses `adam_epochs: 8000` with the same `lbfgs_epochs: 5000`. That symmetry is
+exactly what was missing from the first pass described in §8.4, where the classical
+baseline ran 500 L-BFGS steps against the quantum model's full budget.
+
+> **`lbfgs_epochs` is not an epoch count.** It is passed straight through to
+> `torch.optim.LBFGS(max_iter=...)` as a single optimizer call, with
+> `tolerance_grad=1e-9` and `strong_wolfe` line search (`src/training/trainer.py`). So
+> 5,000 means "refine until the gradient is flat or 5,000 iterations, whichever comes
+> first", not 5,000 passes over a dataset.
+
+### 12.3 Reproducing the other figures
+
+```bash
+# Heat K-sweep, 18 tasks (§8.3). Uses configs/heat_ksweep.yaml + the ladder in src/sweeps.py.
+for i in $(seq 0 17); do python -m experiments.run_sweep --index $i; done
+python -m experiments.aggregate_sweep      # -> results/sweeps/heat_ksweep/ksweep.csv
+
+# Fourier bandwidth ceiling (§8.3). No training required, runs in seconds.
+python -m experiments.fourier_spectrum     # -> results/fourier/spectrum_vs_encoding.png
+```
+
+Note that the K-sweep deliberately uses a **lighter recipe** than the §8 baselines (2,000
+collocation points, 3,000 Adam steps, no L-BFGS) to keep 18 runs tractable. It is
+internally consistent and valid for comparing K against K, but its absolute numbers are
+not comparable to the §8.1 table. `configs/heat_ksweep.yaml` says so in its header.
+
+### 12.4 What determinism to expect
+
+Every experiment reads a YAML config and a global seed (`src/utils/seeds.py` seeds Python's
+`random`, NumPy, and PyTorch, and requests deterministic cuDNN algorithms). Re-running the
+same config with the same seed **on the same machine** reproduces the same numbers to
+floating-point tolerance.
+
+Across machines, accuracy is stable but wall-clock is not. We measured this directly: the
+K-sweep's `K1_seed1234` cell gave 0.165307 on one machine and 0.165637 on another, a 0.2%
+difference, while training times for the same work differed by more than an order of
+magnitude. Treat every `train_seconds` value as machine-specific; the ~20x classical-to-
+quantum ratio in §8.1 is meaningful only because both sides of it were measured on the
+same hardware.
 
 ---
 
