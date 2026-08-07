@@ -2,8 +2,8 @@
 
 WISER × BQP Global Quantum+AI 2026 Challenge. **Team SpectralQ.**
 
-**📊 [Presentation slides →](https://wiserbqp.netlify.app/)**  (interactive; arrow keys or
-space to advance, `F` for fullscreen, `N` for speaker notes)
+**[Presentation slides →](https://wiserbqp.netlify.app/)**  (interactive; arrow keys or
+space to advance, `F` for fullscreen)
 
 ### Team
 
