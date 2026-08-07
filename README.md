@@ -608,7 +608,7 @@ machine, one training recipe per PDE, 5,000 L-BFGS steps, seeds 1234, 2025, and 
 
 ---
 
-## 13. AI-tool disclosure (per challenge rules)
+## 13. AI-tool disclosure
 
 AI coding assistants were used as a scaffolding aid: for boilerplate, refactoring, and
 drafting this documentation. All mathematical derivations, design decisions, and results
