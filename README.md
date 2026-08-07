@@ -174,7 +174,8 @@ src/
     burgers.py       1D viscous Burgers' equation; cached Fourier pseudo-spectral reference
 
   models/        the neural network architectures
-    mlp.py          classical PINN (tanh / relu / sin); includes proper SIREN init for "sin"
+    mlp.py          classical PINN (tanh / relu / sin). NB: the "sin" variant is a plain
+                    sine-activated MLP with Xavier init, not a full SIREN — see §8.6
     quantum_layer.py the VQC as a differentiable torch.nn.Module, the piece that replaces
                      a PINN's first layer. Exposes every design dial: n_qubits, n_layers
                      (re-upload depth), encoding, entanglement, measurement, trainable_scaling
@@ -331,9 +332,10 @@ python -m experiments.run_baseline --config configs/burgers_qapinn_q5.yaml
 python -m experiments.run_baseline --config configs/burgers_nu0.05_q4.yaml
 ```
 
-**SIREN control**, a classical network using a sine activation with correct SIREN
-initialization, for testing whether a purely classical periodic layer can match the
-QAPINN at equal bandwidth:
+**Sine-activation control** (referred to throughout as the "SIREN" control), a classical
+network with a `sin` activation, for testing whether a purely classical periodic layer can
+match the QAPINN. Note this is a plain sine-activated MLP with Xavier init, not a faithful
+SIREN — see the caveat in §8.6:
 ```bash
 python -m experiments.run_baseline --config configs/heat_siren.yaml
 python -m experiments.run_baseline --config configs/burgers_siren.yaml
@@ -426,12 +428,12 @@ training:
 | `heat_pinn.yaml` | heat | classical MLP | baseline |
 | `heat_qapinn.yaml` | heat | QAPINN, 4 qubits | main quantum comparison |
 | `heat_qapinn_probs.yaml` | heat | QAPINN, 4 qubits, `probs` readout | richer-readout variant |
-| `heat_siren.yaml` | heat | classical MLP, sine (SIREN init) | matched-bandwidth classical control |
+| `heat_siren.yaml` | heat | classical MLP, sine activation (Xavier init, not full SIREN — §8.6) | periodic-activation classical control |
 | `burgers_pinn.yaml` | burgers | classical MLP | baseline |
 | `burgers_qapinn.yaml` | burgers | QAPINN, 4 qubits | main quantum comparison |
 | `burgers_qapinn_q3.yaml` | burgers | QAPINN, 3 qubits | qubit-threshold sweep |
 | `burgers_qapinn_q5.yaml` | burgers | QAPINN, 5 qubits | qubit-threshold sweep |
-| `burgers_siren.yaml` | burgers | classical MLP, sine (SIREN init) | matched-bandwidth classical control |
+| `burgers_siren.yaml` | burgers | classical MLP, sine activation (Xavier init, not full SIREN — §8.6) | periodic-activation classical control |
 | `burgers_nu{0.00318,0.05,0.1}_q{3,4,5}.yaml` (9 files) | burgers | QAPINN | ν times qubit-count grid, tests whether required qubits track shock width |
 
 ---
@@ -548,10 +550,18 @@ classical PINN's, alongside its 27% smaller parameter count (985 vs. 1,341). The
 layer is a genuinely more compact function class, not just a smaller number of weights
 that behaves the same as a larger one.
 
-That lower capacity is not automatically a good thing. It tracks closely with the higher
-seed-to-seed variance in §8.1: a smaller hypothesis class is also a harder one to land
-consistently, which is likely part of why QAPINN's variance is 2 to 7 times higher than
-the classical baseline's across both PDEs.
+Lower capacity is also not automatically a good thing, and the two observations we can
+make about it sit side by side without either explaining the other. The QAPINN has the
+lower complexity bound, and it also has the higher seed-to-seed variance, 2 to 7 times the
+classical baseline's across both PDEs. It is tempting to join those with "because": a
+smaller hypothesis class ought to be a harder one to land consistently. We are not
+claiming that, because nothing here tests it. What we have is two measurements on eight
+model-PDE pairs that happen to point the same way, with no intervention isolating capacity
+from everything else that differs between a variational circuit and a `Linear` layer, and
+no mechanism ruling out the more mundane explanation that optimizing through a quantum
+circuit is simply a harder optimization problem. Treat the pairing as an observed
+correlation worth following up, not as a demonstrated cause. Section 10 lists what would
+actually be needed to separate the two.
 
 ### 8.6 What this benchmark does not claim
 
@@ -571,15 +581,27 @@ the classical baseline's across both PDEs.
   higher-dimensional PDEs, larger quantum registers, or physical hardware noise.
 - **No barren-plateau measurement.** We did not measure how gradient variance scales with
   qubit count, which is a known risk once VQCs grow past the modest sizes used here.
+- **Our "SIREN" control is a sine-activated MLP, not a faithful SIREN.** `src/models/mlp.py`
+  applies `torch.sin(x)` with no `omega_0` frequency scaling and initializes every layer
+  with `xavier_normal_`. A true SIREN (Sitzmann et al., 2020) uses `sin(omega_0 * x)` with
+  `omega_0 = 30` and a specific uniform init, with the first layer treated separately;
+  those choices are the substance of that paper, and we did not implement them. The
+  `siren_omega0: 30.0` key in `configs/heat_siren.yaml` and `configs/burgers_siren.yaml` is
+  never read by `build_model` and has no effect. This does not invalidate the control — it
+  is still a legitimate classical periodic-activation baseline trained at an identical
+  budget, and that is the role it plays in §8.1 — but it does mean our results are not
+  evidence about SIREN as published, and a properly initialized SIREN might do better than
+  the numbers here.
 
 ### 8.7 The practical recipe this project produced
 
 If you are deciding whether to add a quantum layer to a PINN for a new PDE, our results
 point to a concrete checklist rather than a yes or no answer:
 
-1. Ask first whether you need a quantum layer at all. A classical control like SIREN, at
-   the same bandwidth budget, may get you the same result at a fraction of the training
-   cost. It did on both PDEs here.
+1. Ask first whether you need a quantum layer at all. A classical periodic-activation
+   network may get you the same result at a fraction of the training cost. Ours did on
+   both PDEs, and it was only a sine-activated MLP (§8.6) — a properly initialized SIREN
+   would be a stronger baseline still, not a weaker one.
 2. Fourier-analyze your target before choosing hardware. Know its true wavenumbers, the
    way Heat's are known to be exactly k = 1 and k = 4.
 3. Check that the modes fit inside K with margin, not exactly at the boundary. K = 4
@@ -780,6 +802,47 @@ baseline ran 500 L-BFGS steps against the quantum model's full budget.
 > `tolerance_grad=1e-9` and `strong_wolfe` line search (`src/training/trainer.py`). So
 > 5,000 means "refine until the gradient is flat or 5,000 iterations, whichever comes
 > first", not 5,000 passes over a dataset.
+
+**How the `configs/rerun/` files differ from the exploratory configs in `configs/`.** The
+top-level configs are a fast iteration setting, not the §8 recipe, and it is worth being
+precise about the gap rather than summarizing it as "just the L-BFGS steps and the seed",
+because for Heat that would be wrong:
+
+| Difference | Where | Does it affect results? |
+|---|---|---|
+| `lbfgs_epochs` 500 (or 0) → 5000 | every config | **Yes.** This is the §8.4 correction. |
+| `seed` fixed 1234 → 1234 / 2025 / 7 | every config | **Yes**, by design — three seeds per arm. |
+| `log_every`, `eval_every` | every config | No. Logging cadence only; neither is read by the optimizer. |
+| `adam_epochs` 3000 → 6000, `adam_lr` 0.005 → 0.001, `n_collocation` 2000 → 8000, `n_supervised` 300 → 400 | **`heat_qapinn.yaml` only** | **Yes.** See below. |
+| `siren_omega0: 30.0` present → absent | both SIREN configs | No. The key is never read by `build_model`; see §8.6. |
+
+The Heat row is the important one. `configs/heat_qapinn.yaml` carries an entirely different
+training recipe from `configs/heat_pinn.yaml` — a quarter of the collocation points, half
+the Adam steps, a 5x larger learning rate, and no L-BFGS at all. Comparing those two files
+directly does not compare a classical and a quantum model; it compares two different
+training budgets. That is precisely why `configs/rerun/` exists: within a PDE, all of its
+configs carry a byte-identical `training:` block, so `model:` and `seed:` are the only
+things that vary. You can confirm the whole table above with:
+
+```bash
+python - <<'PY'
+import yaml
+from pathlib import Path
+def flat(d, p=""):
+    out = {}
+    for k, v in (d or {}).items():
+        out.update(flat(v, f"{p}{k}.") if isinstance(v, dict) else {f"{p}{k}": v})
+    return out
+for base, rerun in [("heat_pinn", "T1_heat_pinn_s1234"), ("heat_qapinn", "T1_heat_q4_s1234"),
+                    ("burgers_pinn", "T1_burgers_pinn_s1234"), ("heat_siren", "T2_heat_siren_s1234")]:
+    a = flat(yaml.safe_load(Path(f"configs/{base}.yaml").read_text()))
+    b = flat(yaml.safe_load(Path(f"configs/rerun/{rerun}.yaml").read_text()))
+    print(f"\n{base} -> {rerun}")
+    for k in sorted(set(a) | set(b)):
+        if k != "run_name" and a.get(k) != b.get(k):
+            print(f"  {k}: {a.get(k)!r} -> {b.get(k)!r}")
+PY
+```
 
 ### 12.3 Reproducing the other figures
 
