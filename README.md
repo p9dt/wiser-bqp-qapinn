@@ -197,6 +197,18 @@ The circuit runs on PennyLane's `default.qubit` state-vector simulator with
 `diff_method="backprop"`, so it is fully differentiable in PyTorch, including the
 second derivatives a PDE residual needs (for example `u_xx`).
 
+### Architecture diagrams
+
+<p align="center">
+  <img src="assets/architecture/01-layer-swap-and-circuit.png" width="850" alt="Diagram comparing the classical PINN's first layer against the QAPINN's quantum layer, plus the underlying 4-qubit circuit">
+</p>
+<p align="center"><sub>The swap in full. Left: the classical PINN's first layer, <code>Linear(2 → 64)</code> with a tanh activation, 1,341 parameters total. Right: the same network with only that first layer replaced by <code>QuantumLayer(2 → 4)</code>, an expectation-value readout over a 4-qubit register, 985 parameters total. The circuit diagram at the bottom shows exactly what runs on those four qubits: two rounds of angle encoding (<code>R<sub>y</sub>(x)</code>, <code>R<sub>y</sub>(t)</code>), trainable single-qubit rotations, a ring of CNOTs for entanglement, and a final Pauli-Z measurement. Two encoding rounds on a 4-qubit register gives bandwidth K = 4, the number that Section 8.3 tests directly.</sub></p>
+
+<p align="center">
+  <img src="assets/architecture/02-full-pipeline.png" width="850" alt="End-to-end pipeline diagram showing input normalization, the swapped first layer, the shared classical tail, and the PDE-residual loss">
+</p>
+<p align="center"><sub>The same swap, traced end to end. An <code>(x, t)</code> pair is normalized to <code>[-1, 1]</code>, passed through whichever first layer is active (a 60-parameter classical matrix or a 24-parameter quantum circuit), then through a classical tail that is byte-identical either way, producing <code>u(x, t)</code>. Autograd differentiates back through the whole graph, including the circuit, to get the derivatives the PDE residual needs. That second-order backward pass through a state-vector simulation is the source of the roughly 20x training-time gap reported in Section 8.1.</sub></p>
+
 ---
 
 ## 5. Setup
@@ -356,6 +368,11 @@ refinement steps, three seeds (1234, 2025, 7), one machine. That matters, becaus
 first pass at this comparison gave a misleading answer, and the story of catching that is
 as important as the numbers themselves. See §8.4.
 
+<p align="center">
+  <img src="assets/architecture/03-experiment-design.png" width="850" alt="Flowchart of the five experiments run on Heat and Burgers, branching from a head-to-head comparison into a K-sweep, a K-ladder, and a SIREN control">
+</p>
+<p align="center"><sub>The five experiments behind every number below. E1 and E2 ask the basic question, does the quantum layer help, on Heat and Burgers respectively. E3 asks whether any effect is really about the quantum circuit or just about having a periodic activation, by comparing against the SIREN control. E4 and E5 test whether the bandwidth formula from Section 1 actually predicts behavior: an 18-run sweep on Heat, and a three-point Q3/Q4/Q5 ladder on Burgers. Every cell uses three seeds, one machine, and one training recipe per PDE. Two of the five verdicts shown here are revisions of what we first reported; see §8.4 for why.</sub></p>
+
 ### 8.1 The headline scoreboard
 
 | Metric | Classical PINN | SIREN | QAPINN (4 qubits) |
@@ -408,6 +425,11 @@ and confirmed its energy is exactly zero past K, for any configuration. The band
 ceiling is a structural property of the circuit, not something that only shows up after
 training.
 
+<p align="center">
+  <img src="assets/architecture/04-bandwidth-verification.png" width="850" alt="Bar chart of Fourier coefficient magnitude versus harmonic number for three encoding configurations, showing a hard cutoff at K">
+</p>
+<p align="center"><sub>Direct evidence for the bandwidth ceiling, measured on an untrained circuit so there is no training involved at all. Each bar group is the magnitude of one Fourier coefficient, swept via a 256-point DFT, for three encodings with predicted bandwidths K = 2, K = 4, and K = 6. In every configuration, magnitude past the predicted K is exactly zero, not small, exactly zero, confirming the cutoff is structural rather than approximate. Amplitude also decays as the harmonic number rises, meaning the top usable mode is representable but weak, which is why Section 8.7's recipe recommends leaving margin inside K rather than sitting exactly at the boundary.</sub></p>
+
 One caveat worth stating plainly: register width matters on its own, independent of K. In
 that same sweep, K = 5 built from a 2-qubit register scored roughly five times worse than
 K = 4 built from a 4-qubit register. Bandwidth and register width are not interchangeable,
@@ -431,6 +453,11 @@ to 0.0063: a 12x improvement, and enough on its own to erase and reverse the app
 quantum advantage. The "quantum win" in our first pass was a training-budget artifact on
 the classical side, not a real effect from the quantum layer. All numbers reported in
 §8.1 through §8.3 use the properly trained baseline.
+
+<p align="center">
+  <img src="assets/architecture/05-baseline-correction.png" width="850" alt="Log-scale training loss curves for the classical PINN, SIREN, and QAPINN on Burgers, showing the classical curve overtaking the others once L-BFGS runs to completion">
+</p>
+<p align="center"><sub>The correction, visualized. All three models start on nearly identical curves through the Adam warm-up. Once L-BFGS refinement begins (the dashed line), the classical PINN keeps descending for the full 5,000 steps and ends almost an order of magnitude lower than the point where our original run stopped it at step 500, while every model was still descending. Cutting training short does not penalize every model equally: it penalizes whichever one has the most headroom left to give up, which in this case was the classical baseline, and that asymmetry is exactly how the apparent quantum win appeared.</sub></p>
 
 We are including this not to bury it, but because catching your own baseline's training
 budget before publishing a comparison is exactly the kind of check a benchmark like this
