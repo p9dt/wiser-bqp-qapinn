@@ -14,8 +14,41 @@ Satyabrat Sahu — satyabratsahu71@gmail.com — Guru Gobind Singh Indraprastha 
 This README is written so that someone who has never seen this repository (a teammate,
 a grader, an interviewer) can read it top to bottom and understand what the project does,
 why it is built this way, how to run every piece of it, and where it currently stands.
-If you only read two sections, read **§1** and **§8**. Section 1 explains the idea the
-rest of the repo is built to test, and section 8 tells you whether that idea held up.
+If you are short on time, read **Key findings** just below. If you can spare two full
+sections, read **§1** and **§8**: section 1 explains the idea the rest of the repo is
+built to test, and section 8 tells you whether that idea held up.
+
+---
+
+## Key findings
+
+The full evidence and reasoning are in §8. This is the short version, for anyone who
+does not have time to read the whole thing.
+
+- **Heat (smooth, two-mode target): a statistical tie.** QAPINN's relative L2 error
+  (0.000487) sits close to the classical PINN's (0.000243). A two-sample t-test
+  (t = 1.05) cannot tell the two apart from seed noise across three seeds, so we call
+  it a tie rather than a loss.
+- **Burgers (sharp shock, broadband target): the classical network wins clearly.** The
+  classical PINN beats QAPINN by roughly 3.1x (0.0063 vs. 0.0194 relative L2 error),
+  and the gap is statistically significant (t between 4.8 and 4.82), not a lucky seed.
+- **The bandwidth theory's prediction held, exactly.** Isolated to a fixed 4-qubit
+  register, Heat's error forms a clean elbow exactly at K = 4, the target's true
+  spectral content, matching what the circuit's Fourier structure predicts before any
+  training happens.
+- **We caught our own mistake and reversed it.** An early pass showed QAPINN beating
+  the classical network on Burgers by 7.8%. That "win" turned out to be an
+  under-trained classical baseline (500 vs. 5,000 L-BFGS steps). Trained properly, the
+  classical baseline's error dropped 12x, and the apparent quantum advantage reversed
+  into a clear classical win. See §8.4 for the full story.
+- **The quantum layer is smaller and lower-complexity, but noisier.** 27% fewer
+  parameters, a 3.2x lower spectral-complexity bound, and 2x to 7x higher
+  seed-to-seed variance than the classical baseline on both PDEs.
+- **It costs about 20x more to train**, purely from re-simulating the circuit, and its
+  second derivatives, at every optimizer step on a CPU-bound state-vector simulator.
+- **Bottom line:** a quantum layer is a constraint that has to be earned. On these two
+  problems, at this scale, it was not. §8.7 turns this into a four-step checklist you
+  can apply to a PDE we did not test.
 
 ---
 
@@ -609,15 +642,65 @@ SLURM job array so all 18 run in parallel instead of serially.
 
 Every experiment reads a YAML config and a global seed (`src/utils/seeds.py`, which seeds
 Python's `random`, NumPy, and PyTorch, and requests deterministic cuDNN algorithms).
-Configs live in `configs/`. Results are written under `results/<run_name>/` and are
-gitignored. Re-running the same config with the same seed on the same machine should
-reproduce the same numbers up to floating-point nondeterminism. The results in §8 come
-from `results/rerun/`, using the exact recipe described at the top of that section: one
-machine, one training recipe per PDE, 5,000 L-BFGS steps, seeds 1234, 2025, and 7.
+`run_baseline.py` writes its output to `results/<run_name>/summary.json` (plus
+`history.json`, `model.pt`, and plots), and the entire `results/` directory is listed in
+`.gitignore`. Nothing under it is committed. A fresh clone of this repository has no
+`results/` directory at all, and none of the numbers in §8 ship pre-computed: they exist
+only as local output that anyone, including us, has to generate by running the commands
+below. There is no separate hidden archive elsewhere; whatever `results/` tree the
+commands below produce on your machine **is** the source of §8's numbers.
+
+### The checked-in configs are lighter than the §8 recipe, on purpose
+
+Open `configs/heat_pinn.yaml` or `configs/burgers_qapinn.yaml` and you will see
+`lbfgs_epochs: 500` (or `0` in `heat_qapinn.yaml`), at a single seed, `1234`. That is a
+fast, exploratory setting for iterating on the code, not the recipe behind §8. The §8
+scoreboard uses **5,000 L-BFGS steps** for every model on both PDEs, at **three seeds
+(1234, 2025, and 7)** each. This is not an inconsistency to puzzle over: it is the exact
+gap §8.4 is about. An earlier run of this comparison used the lighter 500-step setting on
+the classical baseline and produced a misleading result; §8.4 is the story of catching
+that. Every other training field (collocation points, supervised points, Adam epochs and
+learning rate) already matches the recipe in §7's config table; `lbfgs_epochs` and `seed`
+are the only two fields that differ between what is checked in and what produced §8.
+
+### Exact steps to reproduce the §8.1 scoreboard
+
+```bash
+# 1. Generate 18 configs: 6 baseline models (heat_pinn, heat_qapinn, heat_siren,
+#    burgers_pinn, burgers_qapinn, burgers_siren) x 3 seeds, each forced to
+#    lbfgs_epochs: 5000 and a run_name that encodes its own seed so the three
+#    seeds' outputs never overwrite each other.
+mkdir -p configs/rerun
+for cfg in heat_pinn heat_qapinn heat_siren burgers_pinn burgers_qapinn burgers_siren; do
+  for seed in 1234 2025 7; do
+    sed -e "s/^seed: .*/seed: ${seed}/" \
+        -e "s/^run_name: .*/run_name: ${cfg}_seed${seed}/" \
+        -e "s/lbfgs_epochs: .*/lbfgs_epochs: 5000/" \
+        "configs/${cfg}.yaml" > "configs/rerun/${cfg}_seed${seed}.yaml"
+  done
+done
+
+# 2. Run all 18. Each writes results/<cfg>_seed<seed>/summary.json.
+for cfg in configs/rerun/*.yaml; do
+  python -m experiments.run_baseline --config "$cfg"
+done
+```
+
+Then, per PDE, per model: read the three seeds' `rel_l2` field out of their
+`summary.json` files (also containing `max_abs`, `n_params`, and `train_seconds`), take
+the mean and coefficient of variation for the §8.1 table, and run a two-sample t-test
+between the classical and QAPINN arrays for §8.2's significance numbers. Re-running the
+same config with the same seed on the same machine should reproduce the same numbers up
+to floating-point nondeterminism.
+
+The Heat K-sweep (§8.3) and the baseline-correction figures (§8.4) use the commands
+already given in §6 and are not affected by the change above: the K-sweep's own recipe
+(2,000 collocation points, 3,000 Adam epochs, no L-BFGS) is deliberately lighter, since it
+is a diagnostic sweep across 18 runs rather than a head-to-head accuracy comparison.
 
 ---
 
-## 13. AI-tool disclosure
+## 13. AI-tool disclosure (per challenge rules)
 
 AI coding assistants were used as a scaffolding aid: for boilerplate, refactoring, and
 drafting this documentation. All mathematical derivations, design decisions, and results
