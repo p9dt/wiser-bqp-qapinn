@@ -1,6 +1,8 @@
 #!/bin/bash
 # Heat K-sweep as a SLURM job array: 18 tasks (6 bandwidths x 3 seeds), one per element.
-# Submit from ~/wiser-bqp-cluster:  sbatch scripts/paramshakti_array.sbatch
+# 🚨 SUBMIT FROM $SCRATCH, NEVER /home — /home submissions are auto-cancelled + risk account lock.
+#   cp -r ~/wiser-bqp-qapinn "$SCRATCH"/
+#   cd "$SCRATCH"/wiser-bqp-qapinn && sbatch scripts/paramshakti_array.sbatch
 #SBATCH -J wiser-ksweep
 #SBATCH -A aniketec
 #SBATCH -p shared
@@ -18,5 +20,7 @@ conda activate wiser
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
 export OMP_NUM_THREADS=4
 
-cd ~/wiser-bqp-cluster
+# Run from wherever sbatch was invoked (must be under $SCRATCH — see header). SLURM_SUBMIT_DIR is
+# the scratch submit dir; using it keeps outputs on scratch and off /home.
+cd "$SLURM_SUBMIT_DIR"
 python -m experiments.run_sweep --index $SLURM_ARRAY_TASK_ID
