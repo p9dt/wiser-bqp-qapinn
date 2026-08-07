@@ -200,7 +200,7 @@ second derivatives a PDE residual needs (for example `u_xx`).
 ### Architecture diagrams
 
 <p align="center">
-  <img src="Assets/architecture/01-layer-swap-and-circuit.png" width="850" alt="Diagram comparing the classical PINN's first layer against the QAPINN's quantum layer, plus the underlying 4-qubit circuit">
+  <img src="Assets/Architecture/01-layer-swap-and-circuit.png" width="850" alt="Diagram comparing the classical PINN's first layer against the QAPINN's quantum layer, plus the underlying 4-qubit circuit">
 </p>
 <p align="center"><sub>The swap in full. Left: the classical PINN's first layer, <code>Linear(2 → 64)</code> with a tanh activation, 1,341 parameters total. Right: the same network with only that first layer replaced by <code>QuantumLayer(2 → 4)</code>, an expectation-value readout over a 4-qubit register, 985 parameters total. The circuit diagram at the bottom shows exactly what runs on those four qubits: two rounds of angle encoding (<code>R<sub>y</sub>(x)</code>, <code>R<sub>y</sub>(t)</code>), trainable single-qubit rotations, a ring of CNOTs for entanglement, and a final Pauli-Z measurement. Two encoding rounds on a 4-qubit register gives bandwidth K = 4, the number that Section 8.3 tests directly.</sub></p>
 
