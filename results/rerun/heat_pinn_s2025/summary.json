@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/heat_pinn_s2025",
+  "pde": "heat",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.00022909822291694582,
+  "max_abs": 0.0012194812297821045,
+  "train_seconds": 164.2525556087494,
+  "process_seconds": 525.0726385209999
+}

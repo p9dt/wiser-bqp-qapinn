@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/heat_q4_s1234",
+  "pde": "heat",
+  "model_type": "qapinn",
+  "n_params": 985,
+  "rel_l2": 0.0009496420971117914,
+  "max_abs": 0.0045146644115448,
+  "train_seconds": 3359.9144263267517,
+  "process_seconds": 13201.080815008
+}

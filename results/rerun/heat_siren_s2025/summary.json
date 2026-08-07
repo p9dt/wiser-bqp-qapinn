@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/heat_siren_s2025",
+  "pde": "heat",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.0002820495283231139,
+  "max_abs": 0.0021156426519155502,
+  "train_seconds": 139.8941535949707,
+  "process_seconds": 547.077510811
+}
