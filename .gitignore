@@ -26,3 +26,7 @@ Thumbs.db
 # node deps for the local deck preview
 deck/node_modules/
 deck/dist/
+
+# Deck source lives in its own repo (p9dt/wiser-presentation) and is linked from the
+# README; a copy here goes stale immediately.
+deck/
