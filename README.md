@@ -263,7 +263,7 @@ a real experimental variable in this project, not just an implementation detail.
 
 | Dial | Options | What it controls |
 |---|---|---|
-| `n_qubits` | integer (3 to 6 kept modest here) | width of the register; more qubits touching a feature raises its bandwidth `K` |
+| `n_qubits` | integer (2 to 5 in every trained run here) | width of the register; more qubits touching a feature raises its bandwidth `K` |
 | `n_layers` | integer | ansatz depth and number of data re-uploads |
 | `encoding` | `angle` (upload data once) or `reupload` (re-upload every layer) | re-uploading is what lets a small circuit reach a richer Fourier spectrum |
 | `entanglement` | `none`, `linear`, `ring`, `all_to_all` | whether per-qubit frequencies get mixed via CNOTs |
@@ -384,6 +384,10 @@ saving was added, re-run the config once to get one.
 Every experiment is driven entirely by a YAML file under `configs/`. Nothing is hardcoded
 in the training scripts. A config has three blocks.
 
+The example below is `configs/heat_qapinn.yaml`, an **exploratory** config — note
+`lbfgs_epochs: 0`. It is shown to explain the format, not because it produced any §8
+number; those came from `configs/rerun/` at a heavier, budget-matched recipe (§12.2).
+
 ```yaml
 run_name: heat_qapinn_q4        # results land in results/<run_name>/
 seed: 1234                      # global seed (src/utils/seeds.py); everything is reproducible
@@ -484,8 +488,8 @@ the hard one, and about 20x more expensive to train either way.
 
 ### 8.3 The Heat K-sweep confirms the bandwidth theory
 
-Section 1 predicted a specific shape: error should sit near a floor while bandwidth `K` is
-below the target's true content, drop sharply once `K` reaches the target's spectrum, and
+Section 1 predicted a specific shape: error should be elevated while bandwidth `K` is below
+the target's true content, drop sharply once `K` reaches the target's spectrum, and
 possibly creep back up past that point from extra, unused capacity.
 
 Isolated to a fixed 4-qubit register (which removes a register-width confound present in
@@ -512,6 +516,19 @@ One caveat worth stating plainly: register width matters on its own, independent
 that same sweep, K = 5 built from a 2-qubit register scored roughly five times worse than
 K = 4 built from a 4-qubit register. Bandwidth and register width are not interchangeable,
 even though the formula in §1 treats them as one number.
+
+**A second caveat, and a limit on how far the formula can be pushed.** The bandwidth
+ceiling bounds the *quantum layer's* output, not the whole network's. A QAPINN feeds that
+layer into a `tanh` MLP, and a nonlinearity applied to a band-limited signal can produce
+harmonics above its input's band. So a circuit that cannot reach the `k = 4` mode does not
+prevent the model from fitting it — the classical tail reconstructs it indirectly. The
+numbers show how large that effect is: if the network really were band-limited at K, every
+sub-threshold run would sit at the Parseval floor of ~0.156 set by the unreachable mode's
+energy. Instead K = 1 gives 0.182 (at the floor), K = 3 gives 0.068 (44% of it), and
+K = 2 gives 0.024 — about one seventh of the floor. K predicts where the model finds the
+target *easy*, and correctly orders the configurations, but it does not lower-bound a
+QAPINN's error, and no claim that a sub-threshold circuit "cannot" fit the target would be
+correct for this architecture.
 
 On Burgers, we ran the equivalent ladder across Q3, Q4, and Q5 registers. The results were
 statistically indistinguishable across seeds, meaning no register width reliably beat any
