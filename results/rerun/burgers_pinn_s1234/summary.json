@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/burgers_pinn_s1234",
+  "pde": "burgers",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.006248090881854296,
+  "max_abs": 0.03758805990219116,
+  "train_seconds": 236.59137082099915,
+  "process_seconds": 913.614401701
+}

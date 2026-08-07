@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/burgers_siren_s7",
+  "pde": "burgers",
+  "model_type": "mlp",
+  "n_params": 1341,
+  "rel_l2": 0.010135293938219547,
+  "max_abs": 0.03945770859718323,
+  "train_seconds": 247.59086298942566,
+  "process_seconds": 974.3753610499999
+}

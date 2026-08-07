@@ -1,0 +1,10 @@
+{
+  "run_name": "rerun/burgers_q3_s2025",
+  "pde": "burgers",
+  "model_type": "qapinn",
+  "n_params": 959,
+  "rel_l2": 0.09437473118305206,
+  "max_abs": 0.5713637471199036,
+  "train_seconds": 2895.9543466567993,
+  "process_seconds": 11449.295469401
+}
