@@ -378,26 +378,6 @@ the target spectrum, rather than some other confound.
 
 ---
 
-## 9. Project status
-
-Legend: ✅ done and run · 🟡 code ready, not yet executed · 🔴 not yet built.
-
-- ✅ Core architecture: PDEs, MLP, quantum layer, QAPINN, trainer, metrics, plotting.
-- ✅ Fourier explainability module (`src/xai/fourier.py`) + demonstration figure.
-- ✅ Spectral-complexity metric (`src/xai/capacity.py`).
-- ✅ SIREN-correct initialization for the sine-activation classical control.
-- ✅ Five baseline runs (Heat/Burgers × classical/QAPINN, plus a `probs`-readout variant) — see §8.
-- ✅ Unit tests (8/8 passing): PDE reference sanity, quantum-layer spectrum bound.
-- 🟡 **Heat K-sweep** (18 tasks) — fully coded (`src/sweeps.py`, `run_sweep.py`,
-  `aggregate_sweep.py`, SLURM script), not yet executed. Highest-priority remaining item.
-- 🟡 3-qubit / 5-qubit Burgers variants and the 9-cell ν-sweep — configs exist, not yet run.
-- 🟡 SIREN control configs exist, not yet run against QAPINN for the 3-way comparison.
-- 🔴 Barren-plateau, loss-landscape, and attribution XAI modules — specified, not implemented.
-- 🔴 GPU support — the repo has no device handling; everything runs on CPU today.
-- 🔴 `report/` (technical report + slides) — not yet started.
-
----
-
 ## 10. Known caveats — read before citing any number above
 
 - **`heat_qapinn_q4`'s reported `train_seconds` (≈10.8 hours) looks like a
