@@ -122,6 +122,7 @@ tail rather than directly through the quantum representation.
 For a given input feature `z`, the relevant bandwidth is determined by the number of
 qubits assigned to that feature and the number of data re-uploads:
 
+```text
 K_z = n_z * n_uploads
 n_uploads = n_layers if encoding == "reupload" else 1
 
