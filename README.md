@@ -134,9 +134,9 @@ K = (n_qubits / in_dim) * n_uploads
 ```
 `src/sweeps.py` implements this formula for the configurations used in the repo.
 
-For example, 4 qubits with 2 layers of reupload encoding on a 2D input (x, t) gives
-K = (4/2) * 2 = 4 for each input feature, meaning the circuit can represent frequencies
--4 through +4 in each feature.
+For example, 4 qubits with 2 layers of `reupload` encoding on a 2D input `(x, t)` gives
+`K = (4/2) * 2 = 4` for each input feature, meaning the circuit can represent frequencies
+`-4` through `+4` in each feature.
 
 ## 2. Why these two PDEs, Heat and Burgers, and not others
 
