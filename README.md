@@ -630,14 +630,14 @@ point to a concrete checklist rather than a yes or no answer:
 3. Check that the modes fit inside K with margin, not exactly at the boundary. K = 4
    matching a target's exact ceiling is the worst place to sit if you care about variance,
    since you are relying on the circuit's full available capacity with none to spare.
-4. You can buy K cheaply with data re-uploads, but do not forget that register width
+4. You can increase `K` cheaply with data re-uploads, but do not forget that register width
    governs capacity independently, as shown in §8.3.
 
 Our own conclusion, stated plainly: a quantum layer is a constraint you have to earn. On
-these two problems, at this scale, it was not earned. Compute
-`K = (n_qubits / in_dim) * n_uploads`, Fourier-analyze your PDE, check that the modes fit
-inside K with margin, and then, going by the evidence here, use the classical network
-anyway.
+these two problems, at this scale, it was not earned. Compute the per-feature bandwidth
+`K_z = n_z * n_uploads`, Fourier-analyze your PDE, check that the relevant modes fit inside
+the corresponding `K_z` values with margin, and then, going by the evidence here, use the
+classical network anyway.
 
 ---
 
