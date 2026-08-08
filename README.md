@@ -650,8 +650,9 @@ contributions, each one backed by a run you can reproduce with the commands in �
 just cited, it is measured twice: once structurally, by sweeping an untrained circuit's
 output through a DFT and confirming its energy is exactly zero past K for every
 configuration we tried, and once empirically, by isolating a fixed 4-qubit register and
-watching Heat's error form a clean elbow that lands exactly at K = 4 (§8.3). The theory
-made a specific, checkable prediction, and the prediction held.
+watching Heat's error form a clean elbow that lands exactly at K = 4 (§8.3). The theory 
+made a specific, checkable prediction, and that prediction held in the
+controlled Heat experiment.
 
 **A full statistical comparison, not a single-seed anecdote.** Every headline number in
 §8.1 comes from three seeds per arm, per PDE, with a two-sample t-test behind the "tied"
