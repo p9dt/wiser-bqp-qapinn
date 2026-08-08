@@ -15,9 +15,16 @@ space to advance, `F` for fullscreen)
 
 ### Contributions
 
-- **Shravan Kumar Sharma** — Research direction and project coordination. Theoretical
-  analysis connecting the Fourier-bandwidth result to PDE spectral content, interpretation
-  of results, and writing and review of the technical report.
+- **Shravan Kumar Sharma** — Research direction and project coordination. Developed the
+  theoretical framework connecting the Fourier-bandwidth structure of the VQC to the
+  spectral content of PDE solutions, including the per-feature bandwidth formulation
+  and its implications for the quantum layer versus the classical nonlinear tail.
+  Designed and interpreted the Heat bandwidth experiments and the explainability
+  analysis, connected the empirical Fourier-spectrum results to the theoretical
+  bandwidth ceiling, and analyzed the limitations of the approach on broadband
+  Burgers dynamics. Led interpretation of the final results, formulation of the
+  practical design guidelines, and writing, revision, and technical review of the
+  report and presentation.
 - **Mayank Sharma** — Implementation of the classical PINN, SIREN, and QAPINN models
   (`src/`) and the Fourier-spectrum diagnostic in `src/xai/`. Ran the initial benchmark
   suite and the Heat K-sweep. Audited the experiment configurations, identified that the
