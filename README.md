@@ -111,13 +111,7 @@ circuit again in a later layer). The coefficients `c_n`, how much weight each of
 frequencies actually gets, are what training adjusts, through the trainable rotation
 gates and the choice of measurement operator.
 
-The practical consequence is a hard ceiling: no amount of training can add a frequency
-the circuit structure does not already support. If a PDE's true solution needs frequency
-content the VQC's `K` does not cover, the QAPINN is mathematically capped below the
-classical PINN's achievable accuracy, however long you train it. If the solution's
-frequency content fits comfortably inside the VQC's `K`, replacing the first layer should
-cost little. That is the theory. Section 8 tells you how much of it survived contact with
-real training runs and real seed variance.
+**The practical consequence is a structural ceiling on the quantum layer:** no amount of training can make the circuit itself produce a harmonic above its accessible bandwidth. However, the QAPINN as a whole is not band-limited because its classical nonlinear tail can reconstruct higher-frequency content indirectly. Therefore, when the target contains frequencies beyond the quantum layer's `K`, the model is not mathematically incapable of fitting them, but it must reconstruct them through the classical tail rather than directly through the quantum representation.
 
 `src/sweeps.py` gives the exact bandwidth formula used throughout the repo:
 
