@@ -111,7 +111,13 @@ circuit again in a later layer). The coefficients `c_n`, how much weight each of
 frequencies actually gets, are what training adjusts, through the trainable rotation
 gates and the choice of measurement operator.
 
-**The practical consequence is a structural ceiling on the quantum layer:** no amount of training can make the circuit itself produce a harmonic above its accessible bandwidth. However, the QAPINN as a whole is not band-limited because its classical nonlinear tail can reconstruct higher-frequency content indirectly. Therefore, when the target contains frequencies beyond the quantum layer's `K`, the model is not mathematically incapable of fitting them, but it must reconstruct them through the classical tail rather than directly through the quantum representation.
+**The practical consequence is a structural ceiling on the quantum layer:** no amount of
+training can make the circuit itself produce a harmonic above its accessible bandwidth.
+However, the QAPINN as a whole is not band-limited because its classical nonlinear tail
+can reconstruct higher-frequency content indirectly. Therefore, when the target contains
+frequencies beyond the quantum layer's `K`, the model is not mathematically incapable of
+fitting them, but such frequencies must be reconstructed indirectly through the classical
+tail rather than directly through the quantum representation.
 
 `src/sweeps.py` gives the exact bandwidth formula used throughout the repo:
 
