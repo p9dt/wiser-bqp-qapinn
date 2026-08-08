@@ -129,6 +129,7 @@ n_uploads = n_layers if encoding == "reupload" else 1
 where n_z is the number of qubits assigned to feature z. In our 2D experiments, qubits
 are assigned evenly across the input features, so this reduces to:
 
+```
 K = (n_qubits / in_dim) * n_uploads
 
 src/sweeps.py implements this formula for the configurations used in the repo.
