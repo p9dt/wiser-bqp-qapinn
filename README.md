@@ -51,10 +51,10 @@ does not have time to read the whole thing.
 - **Burgers (sharp shock, broadband target): the classical network wins clearly.** The
   classical PINN beats QAPINN by roughly 3.1x (0.0063 vs. 0.0194 relative L2 error),
   and the gap is statistically significant (t between 4.8 and 4.82), not a lucky seed.
-- **The bandwidth theory's prediction held, exactly.** Isolated to a fixed 4-qubit
-  register, Heat's error forms a clean elbow exactly at K = 4, the target's true
-  spectral content, matching what the circuit's Fourier structure predicts before any
-  training happens.
+- **The bandwidth prediction held for the controlled Heat experiment.** Isolated to a
+  fixed 4-qubit register, Heat's error forms a clean elbow at K = 4, matching the
+  target's highest wavenumber and the circuit's Fourier structure before any training
+  happens.
 - **We caught our own mistake and reversed it.** An early pass showed QAPINN beating
   the classical network on Burgers by 7.8%. That "win" turned out to be an
   under-trained classical baseline (500 vs. 5,000 L-BFGS steps). Trained properly, the
